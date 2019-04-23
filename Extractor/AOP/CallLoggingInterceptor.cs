@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Text;
 using Castle.DynamicProxy;
 
@@ -11,13 +12,13 @@ namespace Extractor.AOP
     {
         private int _indentation = 0;
         Dictionary<string,Stopwatch> _stopwatches = new Dictionary<string, Stopwatch>() ;
+        Dictionary<string, int> _inc = new Dictionary<string, int>();
         public void Intercept(IInvocation invocation)
         {
-            try
-            {
                 _indentation++;
                 var sw = GetStopWatch(invocation.Method.Name);
-                sw.Start();
+                _inc[invocation.Method.Name] =  GetInc(invocation.Method.Name) + 1;
+            sw.Start();
                 try
                 {
                     invocation.Proceed();
@@ -28,11 +29,6 @@ namespace Extractor.AOP
                 }
 
                 sw.Stop();
-            }
-            finally
-            {
-                //_indentation--;
-            }
         }
 
         private Stopwatch GetStopWatch(string methodName)
@@ -44,7 +40,15 @@ namespace Extractor.AOP
 
             return _stopwatches[methodName];
         }
+        private int GetInc(string methodName)
+        {
+            if (!_inc.ContainsKey(methodName))
+            {
+                _inc.Add(methodName, 0);
+            }
 
+            return _inc[methodName];
+        }
         public void Print()
         {
             _stopwatches.ToList().ForEach(

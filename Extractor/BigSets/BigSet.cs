@@ -98,7 +98,14 @@ namespace Extractor
             BigSet col2 = (BigSet) col;
             for (int i = 0; i < data.Count; i++)
             {
-                data[i] = data[i] & col2.data[i];
+                if (col2.data.Count > i)
+                {
+                    data[i] = data[i] & col2.data[i];
+                }
+                else
+                {
+                    data[i] = 0;
+                }
             }
         }
 

@@ -6,7 +6,7 @@ namespace Extractor
 {
     class PatternPrinter : IPatternPrinter
     {
-        public void PrintPattern(SearchSpace searchSpace)
+        public void PrintPattern(ISearchSpace searchSpace)
         {
             Console.WriteLine($"PATTERN: ");
             searchSpace.Print().ForEach(

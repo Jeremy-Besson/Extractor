@@ -21,12 +21,12 @@ namespace Extractor
 
         public void Extract()
         {
-            SearchSpace searchSpace = new SearchSpace(_bigSetFactory, _data);
-
+            ISearchSpace searchSpace = SearchSpace.Create(_bigSetFactory, _data);
+            searchSpace.Init();
             Enum(searchSpace);
         }
 
-        private void Enum(SearchSpace searchSpace)
+        private void Enum(ISearchSpace searchSpace)
         {
             int toEnumerateB = searchSpace.GetNextToEnumerateB();
 

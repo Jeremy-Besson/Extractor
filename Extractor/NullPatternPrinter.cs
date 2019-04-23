@@ -7,7 +7,7 @@ namespace Extractor
     class NullPatternPrinter : IPatternPrinter
     {
         int i = 0;
-        public void PrintPattern(SearchSpace searchSpace)
+        public void PrintPattern(ISearchSpace searchSpace)
         {
             i++;
 

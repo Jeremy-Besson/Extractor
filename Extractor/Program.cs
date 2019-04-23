@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using Castle.DynamicProxy;
 using Extractor.AOP;
@@ -27,14 +28,20 @@ namespace Extractor
             //var proxy =  generator.CreateInterfaceProxyWithTargetInterface( typeof(IBigSet), new CallLoggingInterceptor());
             //var comparer = DelegateWrapper.WrapAs<IBigSet>(new CallLoggingInterceptor());
 
-
+            
             var data = Data.GenerateRandomData(22,1000,0.1);
 
+            Stopwatch stopwatch = Stopwatch.StartNew();
             var bigSetFactoryWithInterceptor  = new BigSetFactoryWithInterceptor();
+            //var bigSetFactoryWithInterceptor = new BigSetFactory();
             Extractor extractor = new Extractor(data, bigSetFactoryWithInterceptor ,  new NullPatternPrinter());
             extractor.Extract();
+            stopwatch.Stop();
             bigSetFactoryWithInterceptor.Print();
 
+            
+
+            Console.WriteLine($"Finished: {stopwatch.Elapsed}");
 
             Console.WriteLine("Hello World!");
             int firstNumber = 14, secondNumber = 11, result;

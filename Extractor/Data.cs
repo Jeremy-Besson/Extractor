@@ -14,7 +14,16 @@ namespace Extractor
         {
             B = d;
             maxNumberA = 0;
-
+            d.ForEach(
+            x => 
+            {
+                if (((BigSet) x).data.Count != ((BigSet)d[0]).data.Count)
+                {
+                    var ff = "dfg";
+                }
+            }
+            
+                );
             d.ForEach(
                 x =>
                 {

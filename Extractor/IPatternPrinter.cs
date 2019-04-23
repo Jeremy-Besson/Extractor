@@ -2,6 +2,6 @@
 {
     internal interface IPatternPrinter
     {
-        void PrintPattern(SearchSpace searchSpace);
+        void PrintPattern(ISearchSpace searchSpace);
     }
 }

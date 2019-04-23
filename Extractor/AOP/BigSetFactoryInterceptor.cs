@@ -27,7 +27,7 @@ namespace Extractor.AOP
         {
             //generator.CreateClassProxyWithTarget(typeof(BigSet), callLogging);
             BigSet bigSetProxy = generator.CreateClassProxy<BigSet>(callLogging);
-            var options = new ProxyGenerationOptions { Selector = new DelegateSelector() };
+            //var options = new ProxyGenerationOptions { Selector = new DelegateSelector() };
 
             Stopwatch2.Start();
             ((BigSet)bigSet).data.ForEach(

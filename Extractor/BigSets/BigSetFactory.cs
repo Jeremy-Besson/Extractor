@@ -8,9 +8,13 @@ namespace Extractor.BigSets
     {
         public IBigSet Create(List<int> indexes=null)
         {
+            if (indexes == null)
+            {
+                return  new BigSet();
+            }
             return  new BigSet(indexes);
         }
-
+        
         public virtual IBigSet Clone(IBigSet bigSet)
         {
             BigSet clone = (BigSet)Create();
@@ -22,5 +26,6 @@ namespace Extractor.BigSets
             );
             return clone;
         }
+        
     }
 }
