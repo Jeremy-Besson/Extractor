@@ -8,10 +8,12 @@ namespace Extractor
 {
     static class PrintHelper
     {
-        public static string Print(ulong val)
+        /*
+        public static string Print(BigSet val)
         {
             StringBuilder stringBuilder = new StringBuilder();
 
+            val.Print();
             foreach (var bitNumber in Enumerable.Range(0, 64))
             {
                 if (((val >> bitNumber) & 1) == 1)
@@ -26,5 +28,6 @@ namespace Extractor
             }
             return string.Concat(stringBuilder.ToString().Reverse());
         }
+        */
     }
 }

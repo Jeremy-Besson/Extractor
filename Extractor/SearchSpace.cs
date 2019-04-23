@@ -2,59 +2,86 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using Extractor.BigSets;
 
 namespace Extractor
 {
-    class SearchSpace
+    public class SearchSpace
     {
-        public ulong A;
-        public ulong B;
+        public IBigSet A;
+        public IBigSet B;
         public List<int> YesB = new List<int>();
-        Data _data;
+        private readonly IBigSetFactory _bigSetFactory;
+        private readonly Data _data;
 
-        public SearchSpace(ulong v1, ulong v2, Data data, List<int> yesB)
+        public SearchSpace(IBigSetFactory bigSetFactory, Data data, IBigSet v1 = null, IBigSet v2 = null, List<int> yesB = null)
         {
-            this.A = v1;
-            this.B = v2;
+            _bigSetFactory = bigSetFactory;
             _data = data;
-            YesB = yesB;
+
+            if (v1 == null)
+            {
+                List<int> elemsA = new List<int>();
+                Enumerable.Range(1, _data.NumberA()).ToList().ForEach(
+                    x => { elemsA.Add(x); }
+                );
+                A = _bigSetFactory.Create(elemsA);
+            }
+            else
+            {
+                A = v1;
+            }
+
+            if (v2 == null)
+            {
+                List<int> elemsB = new List<int>();
+                Enumerable.Range(1, _data.NumberB()).ToList().ForEach(
+                    x => { elemsB.Add(x); }
+                );
+                B = new BigSet(elemsB);
+            }
+            else
+            {
+                B = v2;
+            }
+
+            YesB = yesB ?? new List<int>();
         }
 
         internal int GetNextToEnumerateB()
         {
-            Console.WriteLine("Enum: ");
-            Console.WriteLine(PrintHelper.Print(B));
-                        
-            foreach (var bitNumber in Enumerable.Range(0,64))
+            return B.GetNextTrue();
+        }
+
+        public IEnumerable<SearchSpace> SplitB(int indexB)
+        {
+            B.SetFalse(indexB);
+            var yes1 = new List<int>(YesB);
+            yield return new SearchSpace(_bigSetFactory, _data, A, B, yes1);
+
+            var yes2 = new List<int>(YesB) {indexB};
+            var col = _data.getB(indexB);
+            var A2 = _bigSetFactory.Clone(A);
+            A2.Intersect(col);
+            //B.Clone not necessary!!! _bigSetFactory.Clone(B)
+            yield return new SearchSpace(_bigSetFactory, _data, A2, B, yes2);
+            B.SetTrue(indexB);
+        }
+
+        public List<string> Print()
+        {
+            var yesS = "";
+            if (YesB.Count > 0)
             {
-                if (((B >> bitNumber) & 1) == 1)
-                {
-                    Console.WriteLine(bitNumber);
-                    return bitNumber;
-                }
+                yesS = YesB.Select(x => x + "").ToList().Aggregate((a, b) => a + ", " + b);
             }
 
-            return -1;
-            
-        }
-
-        internal IEnumerator<SearchSpace> SplitB(int indexB)
-        {
-            var g = (ulong)~(1 << indexB);
-
-            var col = _data.getB(indexB);
-
-            yield return new SearchSpace(A,B & g,_data, new List<int>(YesB));
-            var jj = new List<int>(YesB);
-            jj.Add(indexB);
-            yield return new SearchSpace(A & col,B & g, _data, );
-        }
-
-
-        
-        public void IntersectA(int minus)
-        {
-            
+            return new List<string>()
+            {
+                A.ToString(),
+                B.ToString(),
+                "{" + yesS + "}",
+            };
         }
     }
 }

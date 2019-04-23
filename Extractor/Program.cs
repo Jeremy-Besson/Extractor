@@ -2,51 +2,38 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using Castle.DynamicProxy;
+using Extractor.AOP;
+using Extractor.BigSets;
 
 namespace Extractor
 {
     class Program
     {
-        
-
-        public void Enum(SearchSpace searchSpace)
+        /*
+        public void InitializeProxy()
         {
-            int toEnumerateB = searchSpace.GetNextToEnumerateB();
-
-            if(toEnumerateB != -1)
-            {
-                using (IEnumerator<SearchSpace> enumerator = searchSpace.SplitB(toEnumerateB))
-                    while (enumerator.MoveNext())
-                    {
-                        
-                        var currentSearchSpace = enumerator.Current;
-
-                        //Console.WriteLine($"A: {PrintHelper.Print(currentSearchSpace.A)}");
-                        //Console.WriteLine($"B: {PrintHelper.Print(currentSearchSpace.B)}");
-
-                        Enum(currentSearchSpace);
-                    }
-            }
-            else
-            {
-                Console.WriteLine($"PATTERN: ");
-                Console.WriteLine($"A: {PrintHelper.Print(searchSpace.A)}");
-                Console.WriteLine($"B: {PrintHelper.Print(searchSpace.B)}");
-
-            }
+            IBar bar = new Bar();
+            var pg = new ProxyGenerator();
+            this.BarInterfaceProxy = pg.CreateInterfaceProxyWithTarget(bar, new CacheInterceptor());
+            this.FooBarProxy = pg.CreateClassProxy<FooBar>(new CacheInterceptor());
         }
-
+        */
         static void Main(string[] args)
         {
 
+            //var proxy = generator.CreateClassProxyWithTarget<BigSet>(typeof(IBigSet), new CallLoggingInterceptor());
+            //container.AddFacility<Castle.Facilities.FactorySupport.FactorySupportFacility>();
+            //var proxy =  generator.CreateInterfaceProxyWithTargetInterface( typeof(IBigSet), new CallLoggingInterceptor());
+            //var comparer = DelegateWrapper.WrapAs<IBigSet>(new CallLoggingInterceptor());
 
-            Data data = new Data();
 
+            var data = Data.GenerateRandomData(22,1000,0.1);
 
-            SearchSpace searchSpace = new SearchSpace(15, 11, data );
-            Program program = new Program();
-            program.Enum(searchSpace);
-
+            var bigSetFactoryWithInterceptor  = new BigSetFactoryWithInterceptor();
+            Extractor extractor = new Extractor(data, bigSetFactoryWithInterceptor ,  new NullPatternPrinter());
+            extractor.Extract();
+            bigSetFactoryWithInterceptor.Print();
 
 
             Console.WriteLine("Hello World!");
