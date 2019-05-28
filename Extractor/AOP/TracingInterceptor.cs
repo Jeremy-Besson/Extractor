@@ -22,9 +22,6 @@ namespace Extractor.AOP
             try
             {
                 invocation.Proceed();
-
-
-
             }
             catch (Exception ex)
             {
