@@ -4,9 +4,15 @@ using System.Text;
 
 namespace Extractor
 {
-    class NullPatternPrinter : IPatternPrinter
+    class NullPatternPrinter : IPatternPrinter, IPrinter
     {
         int i = 0;
+
+        public string Print()
+        {
+            return $"Extracted patterns: {i}";
+        }
+
         public void PrintPattern(ISearchSpace searchSpace)
         {
             i++;

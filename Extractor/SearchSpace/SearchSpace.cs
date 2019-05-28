@@ -8,35 +8,28 @@ using Extractor.BigSets;
 
 namespace Extractor
 {
+
     public class SearchSpace : ISearchSpace
     {
-        public IBigSet A;
-        public IBigSet B;
-        public List<int> YesB = new List<int>();
+        private IBigSet A;
+        private IBigSet B;
+        private Stack<int> YesB = new Stack<int>();
+        private List<int> ShouldBePresentB = new List<int>();
         private IBigSetFactory _bigSetFactory;
         private Data _data;
-        static ProxyGenerator generator = new ProxyGenerator();
-        static CallLoggingInterceptor callLogging = new CallLoggingInterceptor();
 
-        
         private SearchSpace(IBigSetFactory bigSetFactory, Data data, IBigSet v1 = null, IBigSet v2 = null, List<int> yesB = null)
         {
             _bigSetFactory = bigSetFactory;
             _data = data;
         }
-        
 
         public static ISearchSpace Create(IBigSetFactory bigSetFactory, Data data)
         {
             return new SearchSpace(bigSetFactory,data);
-
-//            SearchSpace bigSet = (SearchSpace) generator.CreateClassProxy<SearchSpace>(callLogging);
-//            bigSet._bigSetFactory = bigSetFactory;
-//            bigSet._data = data;
-//            return bigSet;
         }
 
-        public virtual void Copy(IBigSet v1, IBigSet v2, List<int> yesB = null)
+        public virtual void SetSearchSpace(IBigSet v1, IBigSet v2, Stack<int> yesB = null)
         {
             if (v1 == null)
             {
@@ -57,40 +50,42 @@ namespace Extractor
                 Enumerable.Range(1, _data.NumberB()).ToList().ForEach(
                     x => { elemsB.Add(x); }
                 );
-                B = new BigSet(elemsB);
+                B = _bigSetFactory.Create(elemsB);
             }
             else
             {
                 B = v2;
             }
 
-            YesB = yesB ?? new List<int>();
+            YesB = yesB ?? new Stack<int>();
         }
-
 
         public virtual int GetNextToEnumerateB()
         {
             return B.GetNextTrue();
         }
 
-
         public virtual IEnumerable<ISearchSpace> SplitB(int indexB)
         {
             B.SetFalse(indexB);
 
-            var yes1 = new List<int>(YesB);
-            var sp1 = SearchSpace.Create(_bigSetFactory, _data);
-            sp1.Copy(A, B, yes1);
+            //Not Contain
+            ShouldBePresentB.Add(indexB);
             yield return this;
 
-            var yes2 = new List<int>(YesB) {indexB};
+            //Contain
+            ShouldBePresentB.Remove(indexB); ;
             var col = _data.getB(indexB);
             var A2 = _bigSetFactory.Clone(A);
             A2.Intersect(col);
-            var sp2 = SearchSpace.Create(_bigSetFactory, _data);
-            sp2.Copy(A2,B,yes2);
-            yield return sp2;
 
+            YesB.Push(indexB);
+            
+            var tmp = A;
+            A = A2;
+            yield return this;
+            A = tmp;
+            YesB.Pop();
             B.SetTrue(indexB);
         }
 
@@ -103,11 +98,18 @@ namespace Extractor
                 yesS = YesB.Select(x => x + "").ToList().Aggregate((a, b) => a + ", " + b);
             }
 
+            var shouldBe = "";
+            if (ShouldBePresentB.Count > 0)
+            {
+                shouldBe = ShouldBePresentB.Select(x => x + "").ToList().Aggregate((a, b) => a + ", " + b);
+            }
+
             return new List<string>()
             {
                 A.ToString(),
                 B.ToString(),
-                "{" + yesS + "}",
+                "YesB: {" + yesS + "}",
+                "ShouldBeB: {" + shouldBe + "}",
             };
         }
 
@@ -123,7 +125,27 @@ namespace Extractor
                 Enumerable.Range(1, _data.NumberB()).ToList().ForEach(
                     x => { elemsB.Add(x); }
                 );
-                B = new BigSet(elemsB);
+            B = _bigSetFactory.Create(elemsB);
+        }
+
+        public Stack<int> GetYesB()
+        {
+            return YesB;
+        }
+
+        public IBigSet GetASet()
+        {
+            return A;
+        }
+
+        public IBigSet GetBSet()
+        {
+            return B;
+        }
+
+        public List<int> GetShouldBePresentB()
+        {
+            return ShouldBePresentB;
         }
     }
 }

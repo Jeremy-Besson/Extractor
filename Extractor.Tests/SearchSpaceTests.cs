@@ -14,7 +14,8 @@ namespace Extractor.Tests
         public void Setup()
         {
         }
-
+        
+        /*
         [Test]
         public void Scenario1()
         {
@@ -29,12 +30,14 @@ namespace Extractor.Tests
             BigSet b1 = new BigSet(new List<int>() {1, 2});
             BigSet b2 = new BigSet(new List<int>() {1, 2});
 
-            SearchSpace searchcur = new SearchSpace(new BigSetFactory(), data, b1, b2);
+            ISearchSpace searchcur = SearchSpace.Create(new BigSetFactory(), data);
+
             var split1 = searchcur.SplitB(1).ToList();
             var split2 = searchcur.SplitB(2).ToList();
 
         }
-
+        */
+        
         [Test]
         public void Create()
         {
@@ -51,7 +54,9 @@ namespace Extractor.Tests
             BigSet b1 = new BigSet(new List<int>() {1, 2, 3, 4});
             BigSet b2 = new BigSet(new List<int>() {1, 2, 3, 4});
 
-            SearchSpace searchcur = new SearchSpace(new BigSetFactory(), data, b1, b2);
+            ISearchSpace searchcur = SearchSpace.Create(new BigSetFactory(), data);
+            searchcur.SetSearchSpace(b1, b2);
+
             var split = searchcur.SplitB(1);
 
             int i = 0;
@@ -61,23 +66,18 @@ namespace Extractor.Tests
                 var cur = en.Current;
                 if (i == 0)
                 {
-                    Assert.True(cur.A.Equals(new BigSet(new List<int>() {1, 2, 3, 4})));
-                    Assert.True(cur.B.Equals(new BigSet(new List<int>() {2, 3, 4})));
-                    Assert.AreEqual(0, cur.YesB.Count);
+                    Assert.True(cur.GetASet().Equals(new BigSet(new List<int>() {1, 2, 3, 4})));
+                    Assert.True(cur.GetBSet().Equals(new BigSet(new List<int>() {2, 3, 4})));
+                    Assert.AreEqual(0, cur.GetYesB().Count);
                 }
                 else
                 {
-                    Assert.True(cur.A.Equals(new BigSet(new List<int>() {1, 3, 4})));
-                    Assert.True(cur.B.Equals(new BigSet(new List<int>() {2, 3, 4})));
-                    Assert.AreEqual(1, cur.YesB.Count);
+                    Assert.True(cur.GetASet().Equals(new BigSet(new List<int>() {1, 3, 4})));
+                    Assert.True(cur.GetBSet().Equals(new BigSet(new List<int>() {2, 3, 4})));
+                    Assert.AreEqual(1, cur.GetYesB().Count);
                 }
 
                 i++;
-            }
-
-            foreach (var cur in split)
-            {
-
             }
 
             Assert.AreEqual(2, i);

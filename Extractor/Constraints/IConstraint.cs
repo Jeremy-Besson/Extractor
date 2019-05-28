@@ -5,6 +5,6 @@ namespace Extractor.Constraints
 {
     interface IConstraint
     {
-        bool Satisfy(SearchSpace searchSpace, Data data);
+        bool Satisfy(ISearchSpace searchSpace, Data data);
     }
 }

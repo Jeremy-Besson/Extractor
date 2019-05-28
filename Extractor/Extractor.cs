@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Extractor.BigSets;
+using Extractor.Constraints;
 
 namespace Extractor
 {
@@ -11,12 +12,32 @@ namespace Extractor
         private Data _data;
         private readonly IBigSetFactory _bigSetFactory;
         private IPatternPrinter _patternPrinter;
+        private readonly List<IConstraint> _AMconstraints;
+        private List<IConstraint> KeepEnumeratingConstarints { get; }
+        private List<IConstraint> _Mconstraints { get; }
+        private int extractedPattern = 0;
+        private int enumNumber = 0;
 
-        public Extractor(Data data, IBigSetFactory bigSetFactory, IPatternPrinter patternPrinter)
+
+
+        public Extractor(Data data, IBigSetFactory bigSetFactory, IPatternPrinter patternPrinter, List<IConstraint> AMconstraints, List<IConstraint> Mconstraints, List<IConstraint> keepEnumeratingConstarints)
         {
             _data = data;
             _bigSetFactory = bigSetFactory;
             _patternPrinter = patternPrinter;
+            KeepEnumeratingConstarints = keepEnumeratingConstarints;
+            _AMconstraints = AMconstraints;
+            _Mconstraints = Mconstraints;
+        }
+
+        public int GetNumberExtractedPatterns()
+        {
+            return extractedPattern;
+        }
+
+        public int GetNumberEnums()
+        {
+            return enumNumber;
         }
 
         public void Extract()
@@ -28,22 +49,52 @@ namespace Extractor
 
         private void Enum(ISearchSpace searchSpace)
         {
-            int toEnumerateB = searchSpace.GetNextToEnumerateB();
-
-            if (toEnumerateB != -1)
+            var satisfyAMConstarints = _AMconstraints?.All(c =>
             {
-                var split = searchSpace.SplitB(toEnumerateB);
-                using (var en = split.GetEnumerator())
+                return c.Satisfy(searchSpace, _data);
+            }) ?? true;
+
+            if (satisfyAMConstarints)
+            {
+                enumNumber++;
+                int toEnumerateB = searchSpace.GetNextToEnumerateB();
+
+                if (toEnumerateB != -1)
                 {
-                    while (en.MoveNext())
+                    var split = searchSpace.SplitB(toEnumerateB);
+                    using (var en = split.GetEnumerator())
                     {
-                        Enum(en.Current);
+                        while (en.MoveNext())
+                        {
+                                Enum(en.Current);
+                        }
+                    }
+                }
+                else
+                {
+                    var satisfyMConstraint = _Mconstraints?.All(c =>
+                    {
+                        return c.Satisfy(searchSpace, _data);
+                    }) ?? true;
+                    if (satisfyMConstraint)
+                    {
+                        extractedPattern++;
+                        _patternPrinter.PrintPattern(searchSpace);
                     }
                 }
             }
             else
             {
-                _patternPrinter.PrintPattern(searchSpace);
+                /*
+                Console.WriteLine("Failed");
+                searchSpace.Print().ForEach(
+                    toPrint =>
+                    {
+                        Console.WriteLine(toPrint);
+                    }
+                    );
+                    */
+
             }
         }
     }

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using Extractor.BigSets;
 
 namespace Extractor
 {
@@ -14,20 +15,11 @@ namespace Extractor
         {
             B = d;
             maxNumberA = 0;
-            d.ForEach(
-            x => 
-            {
-                if (((BigSet) x).data.Count != ((BigSet)d[0]).data.Count)
-                {
-                    var ff = "dfg";
-                }
-            }
-            
-                );
+
             d.ForEach(
                 x =>
                 {
-                    maxNumberA = Math.Max(x.GetNumberA(), maxNumberA);
+                    maxNumberA = Math.Max(x.GetMaxIndexA(), maxNumberA);
                 }
                 );
         }
@@ -46,15 +38,29 @@ namespace Extractor
             return B.Count;
         }
 
-        public static Data GenerateRandomData(int numberB, int numberA, double density)
+        public static Data GenerateRandomData(IBigSetFactory bigSetFactory, int numberA, int numberB, double density)
         {
+            var record = Enumerable.Range(1, numberA).OrderBy(y => Guid.NewGuid()).Take((int)(numberA * density)).ToList();
             List<IBigSet> data = new List<IBigSet>();
             Enumerable.Range(1, numberB).ToList().ForEach(
                 x =>
                 {
-                    var record = Enumerable.Range(1, numberA).OrderBy(y => Guid.NewGuid()).Take((int) (numberA *density)).ToList();
+                    var record2 = new List<int>(record);
+
+                    record2.OrderBy(y => Guid.NewGuid()).Take(20).ToList().ForEach(
+                        y =>
+                        {
+                            record2.Remove(y);
+                        }
+                        );
+
+                    record2.AddRange(
+                        Enumerable.Range(1, numberA).OrderBy(y => Guid.NewGuid()).Take((int)(20)).ToList()
+                        );
+
+                    //var record = Enumerable.Range(1, numberA).OrderBy(y => Guid.NewGuid()).Take((int) (numberA *density)).ToList();
                     data.Add(
-                        new BigSet(record)
+                        bigSetFactory.Create(record2)
                     );
                 }
             );

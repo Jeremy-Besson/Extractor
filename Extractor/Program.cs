@@ -6,6 +6,7 @@ using System.Linq;
 using Castle.DynamicProxy;
 using Extractor.AOP;
 using Extractor.BigSets;
+using Extractor.Constraints;
 
 namespace Extractor
 {
@@ -23,25 +24,63 @@ namespace Extractor
         static void Main(string[] args)
         {
 
-            //var proxy = generator.CreateClassProxyWithTarget<BigSet>(typeof(IBigSet), new CallLoggingInterceptor());
-            //container.AddFacility<Castle.Facilities.FactorySupport.FactorySupportFacility>();
-            //var proxy =  generator.CreateInterfaceProxyWithTargetInterface( typeof(IBigSet), new CallLoggingInterceptor());
-            //var comparer = DelegateWrapper.WrapAs<IBigSet>(new CallLoggingInterceptor());
+            List<IPrinter> printers = new List<IPrinter>();
+
+            var bigSetFactory  = new BigSetFactoryWithInterceptor();
+            //bigSetFactory = new BigSetFactory();
+            //TOTO
+
+            IPatternPrinter printer = new NullPatternPrinter();
+            printer = new PatternPrinter();
+
+            var data = Data.GenerateRandomData(bigSetFactory, 10000, 2, 0.3);
 
             
-            var data = Data.GenerateRandomData(22,1000,0.1);
+            var data2 = new Data(
+                new List<IBigSet>()
+                {
+                    new BigSet(new List<int>() {1, 3, 4}),
+                    new BigSet(new List<int>() {1, 3, 4}),
+                    new BigSet(new List<int>() {1, 3, 4}),
+                    new BigSet(new List<int>() {1, 3, 4}),
+                }
+            );
+
+            //AM on the ASet and on the BSet should be applied at different places!!!!!
+            List<IConstraint> AMconstraints = new List<IConstraint>()
+            {
+                //new MinSizeYesASet(0),
+                new MinSizeASet(0),
+                new ClosedBSet(),
+            };
+
+            List<IConstraint> Mconstraints = new List<IConstraint>()
+            {
+                //new MinSizeYesASet(2),
+            };
+
+            List<IConstraint> keepEnumeratingConstarints = new List<IConstraint>()
+            {
+                //new MaxSizeYesASet(2),
+            };
+
+            Extractor extractor = new Extractor(data, bigSetFactory , printer, AMconstraints, Mconstraints, keepEnumeratingConstarints);
 
             Stopwatch stopwatch = Stopwatch.StartNew();
-            var bigSetFactoryWithInterceptor  = new BigSetFactoryWithInterceptor();
-            //var bigSetFactoryWithInterceptor = new BigSetFactory();
-            Extractor extractor = new Extractor(data, bigSetFactoryWithInterceptor ,  new NullPatternPrinter());
             extractor.Extract();
             stopwatch.Stop();
-            bigSetFactoryWithInterceptor.Print();
+            bigSetFactory.Print();
 
-            
+            Console.WriteLine("");
+            Console.WriteLine($"Enumerated patterns:{extractor.GetNumberEnums()}");
+            Console.WriteLine($"Extracted patterns:{extractor.GetNumberExtractedPatterns()}");
 
+            //Console.WriteLine(printer.Print());
+
+            Console.WriteLine("");
             Console.WriteLine($"Finished: {stopwatch.Elapsed}");
+
+            return;
 
             Console.WriteLine("Hello World!");
             int firstNumber = 14, secondNumber = 11, result;

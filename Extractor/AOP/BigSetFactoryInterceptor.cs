@@ -10,7 +10,7 @@ namespace Extractor.AOP
     class BigSetFactoryWithInterceptor: IBigSetFactory
     {
         ProxyGenerator generator = new ProxyGenerator();
-        CallLoggingInterceptor callLogging = new CallLoggingInterceptor();
+        TracingInterceptor callLogging = new TracingInterceptor();
         Stopwatch Stopwatch1 = new Stopwatch();
         Stopwatch Stopwatch2 = new Stopwatch();
 
@@ -46,5 +46,6 @@ namespace Extractor.AOP
             Console.WriteLine($"Create: {Stopwatch1.Elapsed}");
             Console.WriteLine($"Clone: {Stopwatch2.Elapsed}");
         }
+
     }
 }

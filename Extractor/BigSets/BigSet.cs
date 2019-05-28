@@ -1,9 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
-using System.Security.Cryptography.X509Certificates;
 using System.Text;
 
 namespace Extractor
@@ -17,6 +15,7 @@ namespace Extractor
             data = new List<ulong>();
         }
 
+        
         public BigSet(List<int> trueIndexs)
         {
             var max = trueIndexs.Count>0 ? trueIndexs.Max() : 0;
@@ -37,6 +36,50 @@ namespace Extractor
                 );
         }
 
+        private ulong NumberOfPresent(ulong x, ulong? minSize = null)
+        {
+            ulong res = 0;
+            x = x - ((x >> 1) & 0x5555555555555555UL);
+            x = (x & 0x3333333333333333UL) + ((x >> 2) & 0x3333333333333333UL);
+            res += ((((x + (x >> 4)) & 0xF0F0F0F0F0F0F0FUL) * 0x101010101010101UL) >> 56);
+            return res;
+        }
+
+        private ulong NumberOfPresent(BigSet bigSet, ulong? minSize = null)
+        {
+            //Cache???
+            ulong res = 0;
+            bigSet.data.Any(
+                x =>
+                {
+                    res += NumberOfPresent(x);
+                    return res > (minSize ?? ulong.MaxValue);
+                }
+
+            );
+            return res;
+        }
+        public virtual ulong NumberOfPresent(ulong? minSize = null)
+        {
+            return NumberOfPresent(this, minSize);
+        }
+
+        public bool IntersectNotNull(IBigSet bigSet)
+        {
+            BigSet col2 = (BigSet)bigSet;
+            for (int i = 0; i < data.Count; i++)
+            {
+                if (col2.data.Count > i)
+                {
+                    var intersectTrueCount = NumberOfPresent(data[i] & ( ~col2.data[i]),0);
+                    if(intersectTrueCount > 0)
+                    {
+                        return true;
+                    }
+                }
+            }
+            return false;
+        }
         public virtual void SetValues(List<int> trueIndexs)
         {
             var max = trueIndexs.Count > 0 ? trueIndexs.Max() : 0;
@@ -56,7 +99,6 @@ namespace Extractor
                 }
             );
         }
-
         public virtual void SetFalse(int indexB)
         {
             int ind = (indexB-1) / 64;
@@ -64,7 +106,6 @@ namespace Extractor
             var g = (ulong)~(1 << rest);
             data[ind] = data[ind] & g;
         }
-
         public virtual void SetTrue(int trueIndex)
         {
             int ind = (trueIndex - 1) / 64;
@@ -73,7 +114,6 @@ namespace Extractor
             ulong g = (un << rest);
             data[ind] = data[ind] | g;
         }
-
         public virtual int GetNextTrue()
         {
             var i = 0;
@@ -92,7 +132,6 @@ namespace Extractor
             }
             return -1;
         }
-
         public virtual void Intersect(IBigSet col)
         {
             BigSet col2 = (BigSet) col;
@@ -108,7 +147,6 @@ namespace Extractor
                 }
             }
         }
-
         public override bool Equals(Object obj)
         {
             var ob =  obj as BigSet;
@@ -127,12 +165,10 @@ namespace Extractor
 
             return true;
         }
-
         public void Print()
         {
             Console.WriteLine(ToString());
         }
-
         public override string ToString()
         {
             StringBuilder stringBuilder = new StringBuilder();
@@ -156,10 +192,11 @@ namespace Extractor
             );
             return string.Concat(stringBuilder.ToString().Reverse());
         }
-
-        public int GetNumberA()
+        public int GetMaxIndexA()
         {
             return data.Count * 64;
         }
+
+        
     }
 }

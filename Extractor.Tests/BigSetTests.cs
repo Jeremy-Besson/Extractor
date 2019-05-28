@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Numerics;
 using NUnit.Framework;
 
@@ -10,6 +11,19 @@ namespace Extractor.Tests
         [SetUp]
         public void Setup()
         {
+        }
+
+        [Test]
+        public void BigSet_NumberOfTrueBits()
+        {
+            BigSet b;
+
+
+            int num = 4020;
+            b = new BigSet(Enumerable.Range(1, num * 8).OrderBy(x => Guid.NewGuid()).Take(num).ToList());
+            var rr = b.NumberOfPresent();
+            
+
         }
 
         [Test]
